@@ -136,19 +136,19 @@ class Orb {
 let player1 = new Player(100, 'blue');
 let player2 = new Player(300, 'green', true);
 
-let platforms = [
-  {x: 0, y: canvas.height - 30, w: canvas.width},
-  {x: 100, y: 450, w: 150},
-  {x: 300, y: 400, w: 180},
-  {x: 600, y: 350, w: 160},
-  {x: 200, y: 280, w: 140},
-  {x: 500, y: 220, w: 130},
-  {x: 100, y: 150, w: 120},
-  {x: 400, y: 100, w: 110}
-];
+let platforms = [];
+for (let i = 0; i < 25; i++) {
+  platforms.push({
+    x: Math.random() * (window.innerWidth - 150),
+    y: Math.random() * (window.innerHeight - 50),
+    w: 80 + Math.random() * 100
+  });
+}
+platforms.push({x: 0, y: canvas.height - 30, w: canvas.width}); // base ground
 
 let powerups = [];
 let orbs = [];
+let tagCooldown = false;
 
 let timer = 120;
 setInterval(() => {
@@ -163,7 +163,7 @@ setInterval(() => {
   const py = Math.random() * (canvas.height - 100);
   const types = ['speed', 'shield', 'swap', 'elevator', 'reversal'];
   powerups.push(new Powerup(px, py, types[Math.floor(Math.random() * types.length)]));
-}, 15000); // slower powerups
+}, 15000);
 
 setInterval(() => {
   const x1 = Math.random() * canvas.width;
@@ -178,15 +178,20 @@ function tagCheck() {
   const dx = player1.x - player2.x;
   const dy = player1.y - player2.y;
   const close = Math.abs(dx) < 30 && Math.abs(dy) < 30;
-  if (close && !player1.reversal && !player2.reversal) {
+
+  if (close && !player1.reversal && !player2.reversal && !tagCooldown) {
     if (player1.tagger && !player2.shield && !player2.tagger) {
       player1.tagger = false;
       player2.tagger = true;
+      tagCooldown = true;
     } else if (player2.tagger && !player1.shield && !player1.tagger) {
       player2.tagger = false;
       player1.tagger = true;
+      tagCooldown = true;
     }
   }
+
+  if (!close) tagCooldown = false;
 }
 
 function loop() {
