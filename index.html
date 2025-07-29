@@ -33,7 +33,6 @@
   <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
-
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -90,6 +89,7 @@
         this.x += this.vx;
         this.y += this.vy;
 
+        this.onGround = false;
         for (const plat of platforms) {
           if (this.x < plat.x + plat.w && this.x + this.width > plat.x &&
               this.y + this.height < plat.y + 20 && this.y + this.height + this.vy >= plat.y) {
@@ -159,12 +159,11 @@
       }
 
       tryTeleport(player) {
-        const near = (a, b) => Math.hypot(player.x - a.x, player.y - a.y) < 20;
-        if (near(this.o1, this.o2)) return;
-        if (near(this.o1, player)) {
+        const near = (a) => Math.hypot(player.x - a.x, player.y - a.y) < 20;
+        if (near(this.o1)) {
           player.x = this.o2.x;
           player.y = this.o2.y;
-        } else if (near(this.o2, player)) {
+        } else if (near(this.o2)) {
           player.x = this.o1.x;
           player.y = this.o1.y;
         }
@@ -179,13 +178,22 @@
     let tagCooldown = false;
     let timer = 120;
 
-    // Random reachable platforms (like stairs)
-    for (let i = 0; i < 20; i++) {
-      let x = 100 + (i % 5) * 250 + Math.random() * 50;
-      let y = canvas.height - 100 - i * 60;
-      platforms.push({x: x, y: y, w: 150});
+    // Randomly scatter platforms
+    for (let i = 0; i < 30; i++) {
+      let x = Math.random() * (canvas.width - 150);
+      let y = Math.random() * (canvas.height - 200);
+      let moving = Math.random() < 0.3;
+      platforms.push({
+        x: x,
+        y: y,
+        w: 120,
+        dir: moving ? 1 : 0,
+        speed: moving ? (1 + Math.random()) : 0
+      });
     }
-    platforms.push({x: 0, y: canvas.height - 30, w: canvas.width});
+
+    // Ground
+    platforms.push({x: 0, y: canvas.height - 30, w: canvas.width, dir: 0, speed: 0});
 
     const powerupTypes = [
       ['speed', '🏃'],
@@ -238,8 +246,15 @@
 
     function loop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#333";
+
+      // Move platforms
       platforms.forEach(p => {
+        if (p.dir !== 0) {
+          p.x += p.speed * p.dir;
+          if (p.x < 0 || p.x + p.w > canvas.width) {
+            p.dir *= -1;
+          }
+        }
         ctx.save();
         ctx.shadowBlur = 10;
         ctx.shadowColor = "#666";
