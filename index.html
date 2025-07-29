@@ -9,12 +9,12 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: radial-gradient(#111, #000);
+      background: linear-gradient(to bottom, #0f0f1f, #050509);
       font-family: sans-serif;
     }
     canvas {
       display: block;
-      background: #111;
+      background: transparent;
     }
     #timer {
       position: absolute;
@@ -29,7 +29,6 @@
 <body>
   <div id="timer">120</div>
   <canvas id="game"></canvas>
-
   <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
@@ -178,21 +177,26 @@
     let tagCooldown = false;
     let timer = 120;
 
-    // Randomly scatter platforms
-    for (let i = 0; i < 30; i++) {
-      let x = Math.random() * (canvas.width - 150);
-      let y = Math.random() * (canvas.height - 200);
-      let moving = Math.random() < 0.3;
+    // Random reachable platforms
+    const platformCount = 25;
+    const spacingY = 80;
+    const maxMoving = 3;
+    let movingCount = 0;
+
+    for (let i = 0; i < platformCount; i++) {
+      let x = Math.random() * (canvas.width - 140);
+      let y = canvas.height - 100 - i * spacingY;
+      let isMoving = movingCount < maxMoving && Math.random() < 0.2;
+      if (isMoving) movingCount++;
       platforms.push({
         x: x,
         y: y,
         w: 120,
-        dir: moving ? 1 : 0,
-        speed: moving ? (1 + Math.random()) : 0
+        dir: isMoving ? 1 : 0,
+        speed: isMoving ? (1 + Math.random()) : 0
       });
     }
 
-    // Ground
     platforms.push({x: 0, y: canvas.height - 30, w: canvas.width, dir: 0, speed: 0});
 
     const powerupTypes = [
@@ -247,17 +251,15 @@
     function loop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Move platforms
+      // Draw and update platforms
       platforms.forEach(p => {
         if (p.dir !== 0) {
           p.x += p.speed * p.dir;
-          if (p.x < 0 || p.x + p.w > canvas.width) {
-            p.dir *= -1;
-          }
+          if (p.x < 0 || p.x + p.w > canvas.width) p.dir *= -1;
         }
         ctx.save();
         ctx.shadowBlur = 10;
-        ctx.shadowColor = "#666";
+        ctx.shadowColor = "#aaa";
         ctx.fillStyle = "#2a2a2a";
         ctx.fillRect(p.x, p.y, p.w, 20);
         ctx.restore();
