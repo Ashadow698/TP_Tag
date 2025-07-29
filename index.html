@@ -9,7 +9,7 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: linear-gradient(to bottom, #1b1b2f, #0f0f1f);
+      background: linear-gradient(160deg, #0099ff, #cc00ff, #ff0033);
     }
     canvas {
       display: block;
@@ -144,10 +144,10 @@ let player2 = new Player(300, 'green', true);
 
 let platforms = [];
 let movingPlatforms = 0;
-const count = 30;
+const count = 50;
 for (let i = 0; i < count; i++) {
   let x = Math.random() * (canvas.width - 100);
-  let y = canvas.height - 50 - i * 70;
+  let y = canvas.height - 50 - i * 60;
   let move = (Math.random() < 0.1 && movingPlatforms < 3);
   if (move) movingPlatforms++;
   platforms.push({x, y, w: 100, dir: move ? 1 : 0, speed: move ? 1 + Math.random() : 0});
@@ -204,7 +204,6 @@ function checkTag() {
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Move platforms
   platforms.forEach(p => {
     if (p.dir !== 0) {
       p.x += p.speed * p.dir;
@@ -263,3 +262,4 @@ gameLoop();
 </script>
 </body>
 </html>
+ 
