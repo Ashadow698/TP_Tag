@@ -123,16 +123,16 @@
         this.y = y;
         this.type = type;
         this.icon = icon;
-        this.width = 24;
-        this.height = 24;
+        this.width = 40;
+        this.height = 40;
       }
 
       draw() {
         ctx.fillStyle = '#333';
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.fillStyle = 'white';
-        ctx.font = '16px Arial';
-        ctx.fillText(this.icon, this.x + 4, this.y + 18);
+        ctx.font = '28px Arial';
+        ctx.fillText(this.icon, this.x + 6, this.y + 30);
       }
     }
 
@@ -159,12 +159,12 @@
       }
 
       tryTeleport(player) {
-        const dist1 = Math.hypot(player.x - this.o1.x, player.y - this.o1.y);
-        const dist2 = Math.hypot(player.x - this.o2.x, player.y - this.o2.y);
-        if (dist1 < 20) {
+        const near = (a, b) => Math.hypot(player.x - a.x, player.y - a.y) < 20;
+        if (near(this.o1, this.o2)) return;
+        if (near(this.o1, player)) {
           player.x = this.o2.x;
           player.y = this.o2.y;
-        } else if (dist2 < 20) {
+        } else if (near(this.o2, player)) {
           player.x = this.o1.x;
           player.y = this.o1.y;
         }
@@ -179,11 +179,11 @@
     let tagCooldown = false;
     let timer = 120;
 
-    // generate reachable platforms
-    for (let y = 100; y < canvas.height - 100; y += 80) {
-      for (let x = 50; x < canvas.width - 100; x += 200) {
-        platforms.push({x, y, w: 120});
-      }
+    // Random reachable platforms (like stairs)
+    for (let i = 0; i < 20; i++) {
+      let x = 100 + (i % 5) * 250 + Math.random() * 50;
+      let y = canvas.height - 100 - i * 60;
+      platforms.push({x: x, y: y, w: 150});
     }
     platforms.push({x: 0, y: canvas.height - 30, w: canvas.width});
 
@@ -204,8 +204,8 @@
 
     setInterval(() => {
       const [type, icon] = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
-      const x = Math.random() * (canvas.width - 30);
-      const y = Math.random() * (canvas.height - 100);
+      const x = Math.random() * (canvas.width - 50);
+      const y = Math.random() * (canvas.height - 150);
       powerups.push(new Powerup(x, y, type, icon));
     }, 15000);
 
@@ -260,8 +260,8 @@
       powerups.forEach((p, i) => {
         p.draw();
         [player1, player2].forEach(player => {
-          if (player.x < p.x + 24 && player.x + 30 > p.x &&
-              player.y < p.y + 24 && player.y + 30 > p.y) {
+          if (player.x < p.x + p.width && player.x + 30 > p.x &&
+              player.y < p.y + p.height && player.y + 30 > p.y) {
             switch (p.type) {
               case 'speed': player.speed = 8; setTimeout(() => player.speed = 4, 5000); break;
               case 'shield': player.shield = true; setTimeout(() => player.shield = false, 5000); break;
