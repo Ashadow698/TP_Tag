@@ -71,12 +71,17 @@ class Player {
   }
 
   draw() {
-    ctx.fillStyle = this.tagger ? 'red' : this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+    gradient.addColorStop(0, this.tagger ? '#ff4d4d' : this.color);
+    gradient.addColorStop(1, '#000');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.roundRect(this.x, this.y, this.width, this.height, 6);
+    ctx.fill();
     if (this.shield) {
       ctx.strokeStyle = 'yellow';
       ctx.lineWidth = 2;
-      ctx.strokeRect(this.x - 2, this.y - 2, this.width + 4, this.height + 4);
+      ctx.stroke();
     }
   }
 }
@@ -91,14 +96,18 @@ class Powerup {
   }
 
   draw() {
-    ctx.fillStyle = {
+    ctx.save();
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = {
       speed: 'lime',
       shield: 'gold',
       swap: 'cyan',
       elevator: 'white',
       reversal: 'magenta'
     }[this.type];
+    ctx.fillStyle = ctx.shadowColor;
     ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.restore();
   }
 }
 
@@ -111,6 +120,9 @@ class Orb {
   }
 
   draw() {
+    ctx.save();
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = this.color;
     ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.arc(this.o1.x, this.o1.y, this.size, 0, Math.PI * 2);
@@ -118,6 +130,7 @@ class Orb {
     ctx.beginPath();
     ctx.arc(this.o2.x, this.o2.y, this.size, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   }
 
   tryTeleport(player) {
@@ -144,7 +157,7 @@ for (let i = 0; i < 25; i++) {
     w: 80 + Math.random() * 100
   });
 }
-platforms.push({x: 0, y: canvas.height - 30, w: canvas.width}); // base ground
+platforms.push({x: 0, y: canvas.height - 30, w: canvas.width}); // ground
 
 let powerups = [];
 let orbs = [];
@@ -196,8 +209,16 @@ function tagCheck() {
 
 function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#333";
-  platforms.forEach(p => ctx.fillRect(p.x, p.y, p.w, 20));
+
+  // Draw platforms with glow
+  platforms.forEach(p => {
+    ctx.save();
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "#666";
+    ctx.fillStyle = "#2a2a2a";
+    ctx.fillRect(p.x, p.y, p.w, 20);
+    ctx.restore();
+  });
 
   player1.update('a', 'd', 'w');
   player2.update('ArrowLeft', 'ArrowRight', 'ArrowUp');
